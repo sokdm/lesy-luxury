@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Messages | Lesy Luxury</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<h1>Customer Messages</h1>
+
+<% messages.forEach((m, i) => { %>
+  <div style="border:1px solid #ccc; padding:10px; margin:10px; border-radius:10px;">
+    <p><b><%= m.user %>:</b> <%= m.message %></p>
+
+    <form action="/admin/reply" method="POST">
+      <input type="hidden" name="user" value="<%= m.user %>">
+      <input type="text" name="reply" placeholder="Type reply..." style="padding:8px; width:60%;" required>
+      <button type="submit" style="padding:8px 12px; background:#28a745; color:white; border:none; border-radius:6px;">Reply</button>
+    </form>
+
+    <% if(m.reply){ %>
+      <p><b>Admin Reply:</b> <%= m.reply %></p>
+    <% } %>
+  </div>
+<% }) %>
+</body>
+</html>

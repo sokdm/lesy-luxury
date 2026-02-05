@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Checkout | Lesy Luxury</title>
+<link rel="stylesheet" href="/css/style.css">
+<style>
+body {
+    font-family: Arial;
+    background: #f0f8ff;
+    padding: 20px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+.cart-item {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 12px;
+    margin: 10px auto;
+    width: 80%;
+    background: #fff;
+    display: flex;
+    justify-content: space-between;
+    font-size: 20px;
+}
+
+input, select {
+    padding: 12px;
+    font-size: 18px;
+    margin: 10px 0;
+    width: 80%;
+}
+
+button {
+    padding: 14px 24px;
+    font-size: 20px;
+    margin-top: 20px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.total {
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 20px;
+}
+</style>
+</head>
+<body>
+
+<h1>Checkout</h1>
+
+<div id="cartItemsContainer"></div>
+
+<div class="total">Total: $<span id="totalPrice">0</span></div>
+
+<h2>Customer Information</h2>
+<form id="orderForm" action="/order" method="POST">
+    <input type="text" name="name" placeholder="Full Name" required><br>
+    <input type="text" name="phone" placeholder="Phone Number" required><br>
+    <input type="text" name="address" placeholder="Full Address" required><br>
+    <select name="payment" required>
+        <option value="">Select Payment Method</option>
+        <option value="palmpay">Palmpay - 8108332873 Daniel Wisdom Ewere</option>
+        <option value="opay">Opay - 8108332873 Mercy Chiyem Daniel</option>
+    </select><br>
+    <button type="submit">Place Order</button>
+</form>
+
+<script>
+// Load cart from localStorage
+let cart = JSON.parse(localStorage.getItem("cartItems")) || [];
+
+const container = document.getElementById("cartItemsContainer");
+const totalPriceEl = document.getElementById("totalPrice");
+
+function renderCart() {
+    container.innerHTML = "";
+    let total = 0;
+    cart.forEach(item => {
+        total += item.price;
+        const div = document.createElement("div");
+        div.className = "cart-item";
+        div.innerHTML = `${item.name} - $${item.price.toFixed(2)}`;
+        container.appendChild(div);
+    });
+    totalPriceEl.innerText = total.toFixed(2);
+}
+
+renderCart();
+
+// Clear cart after order is submitted
+document.getElementById("orderForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    const formData = new FormData(this);
+    const order = {
+        customer: formData.get("name"),
+        phone: formData.get("phone"),
+        address: formData.get("address"),
+        payment: formData.get("payment"),
+        items: cart,
+        total: cart.reduce((sum, i)=>sum+i.price, 0)
+    };
+    
+    fetch("/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(order)
+    }).then(res => res.json())
+      .then(data => {
+          alert("Order Successful! Delivery in 2 weeks.");
+          localStorage.removeItem("cartItems");
+          window.location.href = "/dashboard";
+      });
+});
+</script>
+
+</body>
+</html>

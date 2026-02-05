@@ -1,0 +1,32 @@
+// Load messages from server
+function loadMessages() {
+    fetch('/message') // changed from /messages to /message
+        .then(res => res.json())
+        .then(data => {
+            const chat = document.getElementById('chatMessages');
+            chat.innerHTML = '';
+            data.forEach(m => {
+                if(m.user === '<%= user %>') { // only show messages for this user
+                    const p = document.createElement('p');
+                    p.innerHTML = `<b>${m.user === '<%= user %>' ? 'You' : 'Admin'}:</b> ${m.message || m.reply}`;
+                    chat.appendChild(p);
+                }
+            });
+            chat.scrollTop = chat.scrollHeight;
+        });
+}
+
+// Send message
+function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    if(!message) return;
+    fetch('/message', { // changed from /messages to /message
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ message })
+    }).then(()=> {
+        input.value='';
+        loadMessages();
+    });
+}

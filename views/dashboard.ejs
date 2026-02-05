@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard | Lesy Luxury</title>
+<link rel="stylesheet" href="/css/style.css">
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f0f8ff;
+    padding: 20px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+#searchBar {
+    width: 50%;
+    padding: 12px;
+    font-size: 18px;
+    margin-bottom: 20px;
+}
+
+.products-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
+.product-card {
+    border: 1px solid #ccc;
+    padding: 10px;
+    width: 300px;
+    background: #fff;
+    text-align: center;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.product-card img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.product-name {
+    font-size: 22px;
+    margin: 10px 0;
+    font-weight: bold;
+}
+
+.product-price {
+    font-size: 20px;
+    color: green;
+    margin-bottom: 10px;
+}
+
+button.add-cart {
+    padding: 12px 20px;
+    font-size: 18px;
+    background: #ff6600;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.cart-summary {
+    margin-top: 30px;
+    font-size: 20px;
+}
+
+.cart-summary span {
+    font-weight: bold;
+}
+
+button.order-btn {
+    margin-top: 10px;
+    padding: 14px 24px;
+    font-size: 20px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<h1>Welcome to Lesy Luxury</h1>
+
+<input type="text" id="searchBar" placeholder="Search Products..." onkeyup="filterProducts()">
+
+<div class="products-container" id="productsContainer">
+  <% products.forEach(p => { %>
+    <div class="product-card" data-name="<%= p.name.toLowerCase() %>">
+        <img src="<%= p.img %>" alt="<%= p.name %>">
+        <div class="product-name"><%= p.name %></div>
+        <div class="product-price">$<%= p.price %></div>
+        <button class="add-cart" onclick="addToCart('<%= p.id %>', '<%= p.name %>', <%= p.price %>)">Add to Cart</button>
+    </div>
+  <% }) %>
+</div>
+
+<div class="cart-summary">
+    Items in Cart: <span id="cartCount">0</span> | Total: $<span id="cartTotal">0</span><br>
+    <button class="order-btn" onclick="goToCheckout()">Order</button>
+</div>
+
+<script>
+let cart = [];
+function addToCart(id, name, price){
+    cart.push({id, name, price});
+    updateCart();
+}
+
+function updateCart(){
+    document.getElementById('cartCount').innerText = cart.length;
+    let total = cart.reduce((sum, item) => sum + item.price, 0);
+    document.getElementById('cartTotal').innerText = total.toFixed(2);
+}
+
+function goToCheckout(){
+    if(cart.length === 0){
+        alert("Your cart is empty!");
+        return;
+    }
+    // Store cart in localStorage to pass to checkout page
+    localStorage.setItem("cartItems", JSON.stringify(cart));
+    window.location.href = "/checkout"; // Make sure /checkout route exists in server.js
+}
+
+function filterProducts(){
+    let input = document.getElementById('searchBar').value.toLowerCase();
+    let cards = document.querySelectorAll('.product-card');
+    cards.forEach(card => {
+        let name = card.getAttribute('data-name');
+        if(name.includes(input)) card.style.display = 'block';
+        else card.style.display = 'none';
+    });
+}
+</script>
+
+</body>
+</html>
+<!-- Customer Service Button -->
+<div style="position:fixed; bottom:20px; right:20px; z-index:9999;">
+    <button onclick="openChat()" style="
+        padding:16px 24px;
+        font-size:20px;
+        border-radius:12px;
+        background:#ff5722;
+        color:white;
+        border:none;
+        cursor:pointer;
+    ">💬 Customer Service</button>
+</div>
+
+<!-- Chat Modal -->
+<div id="chatModal" style="display:none; position:fixed; bottom:70px; right:20px; width:300px; max-height:400px; background:#fff; border:2px solid #ff5722; border-radius:12px; overflow-y:auto; padding:10px; box-shadow:0 0 10px rgba(0,0,0,0.3); z-index:9999;">
+    <h3>Chat with Support</h3>
+    <div id="chatMessages" style="height:200px; overflow-y:auto; border:1px solid #ccc; padding:5px; margin-bottom:10px;"></div>
+    <input type="text" id="chatInput" placeholder="Type message..." style="width:100%; padding:8px; font-size:16px;">
+    <button onclick="sendMessage()" style="width:100%; padding:10px; margin-top:5px; background:#ff5722; color:white; font-size:18px; border:none; border-radius:8px;">Send</button>
+    <button onclick="closeChat()" style="width:100%; padding:10px; margin-top:5px; background:#ccc; color:black; font-size:16px; border:none; border-radius:8px;">Close</button>
+</div>
+<script>
+// Open/Close Chat
+function openChat() { 
+    document.getElementById('chatModal').style.display='block'; 
+    loadMessages(); 
+}
+function closeChat() { 
+    document.getElementById('chatModal').style.display='none'; 
+}
+
+// Load messages from server
+function loadMessages() {
+    fetch('/message')
+        .then(res => res.json())
+        .then(data => {
+            const chat = document.getElementById('chatMessages');
+            chat.innerHTML = '';
+            data.forEach(m => {
+                const p = document.createElement('p');
+                p.innerHTML = `<b>${m.user === '<%= user %>' ? 'You' : 'Admin'}:</b> ${m.message || m.reply}`;
+                chat.appendChild(p);
+            });
+            chat.scrollTop = chat.scrollHeight;
+        });
+}
+
+// Send message
+function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    if(!message) return;
+    fetch('/message', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ message })
+    }).then(()=> {
+        input.value='';
+        loadMessages();
+    });
+}
+
+// Reload messages every 3 seconds
+setInterval(()=>{ 
+    if(document.getElementById('chatModal').style.display==='block') 
+        loadMessages(); 
+}, 3000);
+</script>
