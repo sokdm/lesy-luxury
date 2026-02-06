@@ -1,0 +1,6 @@
+node_modules/
+.env
+orders.json
+users.json
+products.json
+messages.json

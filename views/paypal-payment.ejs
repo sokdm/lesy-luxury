@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PayPal Payment | Lesy Luxury</title>
+<style>
+body{font-family:Arial,sans-serif; background:#f0f8ff; padding:20px; text-align:center;}
+.container{max-width:450px;margin:auto;background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,0.1);}
+h2{margin-bottom:20px;}
+input, button{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid #ccc;font-size:16px;}
+button{background:#0070ba;color:white;border:none;cursor:pointer;}
+.cart-summary{margin-bottom:20px;text-align:left;}
+.copy-btn{background:#ff6600;color:white;padding:6px 12px;border-radius:8px;border:none;cursor:pointer;margin-top:6px;}
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>PayPal Payment</h2>
+  <div class="cart-summary">
+    <h3>Order Summary:</h3>
+    <ul>
+      <% cart.forEach(i => { %>
+        <li><%= i.name %> - $<%= Number(i.price).toFixed(2) %> x <%= i.qty %></li>
+      <% }) %>
+    </ul>
+    <p><strong>Total: $<%= total.toFixed(2) %></strong></p>
+  </div>
+
+  <p>Send your payment to PayPal account:</p>
+  <p><strong>Email:</strong> <span id="paypalEmail"><%= paypalInfo.email %></span></p>
+  <p><strong>Name:</strong> <%= paypalInfo.name %></p>
+  <button class="copy-btn" onclick="copyEmail()">Copy Email</button>
+
+  <form method="POST" action="/paypal-payment">
+    <input type="hidden" name="paypalConfirmed" value="yes">
+    <input type="text" name="fullName" placeholder="Full Name" required>
+    <input type="text" name="phone" placeholder="Phone Number" required>
+    <input type="email" name="email" placeholder="Your Email" required>
+    <input type="text" name="address" placeholder="Full Address" required>
+    <button type="submit">Confirm Payment</button>
+  </form>
+</div>
+
+<script>
+function copyEmail(){
+  const emailText = document.getElementById('paypalEmail').innerText;
+  navigator.clipboard.writeText(emailText).then(()=>alert('PayPal email copied!'));
+}
+</script>
+</body>
+</html>

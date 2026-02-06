@@ -1,15 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Lesy Luxury</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lesy Luxury - Get Started</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #000;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 48px;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+    button {
+      padding: 15px 30px;
+      font-size: 22px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      background-color: #e91e63;
+      color: #fff;
+      cursor: pointer;
+      margin: 10px;
+      transition: 0.2s;
+    }
+    button:hover {
+      background-color: #d81b60;
+    }
+    a {
+      text-decoration: none;
+      color: #fff;
+    }
+  </style>
 </head>
-<body class="center">
-
-  <h1 class="brand">Welcome to Lesy Luxury</h1>
-  <p class="tagline">Premium Fashion • Shoes • Gadgets</p>
-
-  <a href="/login" class="btn big">Get Started</a>
-
+<body>
+  <h1>Welcome to Lesy Luxury</h1>
+  <div>
+    <a href="/signup"><button>Sign Up</button></a>
+    <a href="/login"><button>Login</button></a>
+  </div>
 </body>
 </html>
