@@ -1,21 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Order Success - Lesy Luxury</title>
-  <style>
-    body { background-color: #000; color: #fff; font-family: Arial, sans-serif; text-align:center; padding: 50px; }
-    h1 { font-size: 36px; margin-bottom: 20px; }
-    p { font-size: 22px; margin-bottom: 10px; }
-    button { font-size: 18px; padding: 10px 20px; margin-top: 20px; cursor:pointer; background-color:#e91e63; color:#fff; border:none; border-radius:5px; }
-  </style>
+<meta charset="UTF-8">
+<title>Order Successful</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{
+  font-family:Arial, sans-serif;
+  background:#f2f2f2;
+  margin:0;
+  padding:20px;
+}
+.container{
+  max-width:500px;
+  margin:auto;
+  background:#fff;
+  padding:25px;
+  border-radius:12px;
+  text-align:center;
+}
+h1{
+  margin-bottom:15px;
+  color:green;
+}
+p{
+  font-size:16px;
+  margin-bottom:25px;
+}
+button{
+  padding:14px 20px;
+  font-size:18px;
+  background:#000;
+  color:#fff;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+}
+button:hover{
+  opacity:.9;
+}
+</style>
 </head>
 <body>
-  <h1>Thank You, <%= fullName %>!</h1>
-  <p>Your order has been received.</p>
-  <p>Total: $<%= total.toFixed(2) %></p>
-  <p>A confirmation email has been sent to <%= email %></p>
-  <a href="/dashboard"><button>Back to Dashboard</button></a>
+<div class="container">
+  <h1>Order Successful</h1>
+  <p>Hi <strong><%= fullName %></strong>, your payment was received and your order is successful!</p>
+  <form action="/dashboard">
+    <button type="submit">Go to Dashboard</button>
+  </form>
+</div>
 </body>
 </html>

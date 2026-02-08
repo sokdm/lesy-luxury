@@ -2,233 +2,272 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lesy Luxury Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    background-color: #000;
-    color: #fff;
-    padding: 20px;
-    margin: 0;
-  }
+body{
+  margin:0;
+  padding:15px;
+  font-family:Arial, sans-serif;
+  background:#f2f2f2;
+  color:#000;
+}
 
-  header {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    margin-bottom: 20px;
-  }
+/* HEADER */
+header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:15px;
+}
+.header-left{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+#menuBtn{
+  font-size:28px;
+  cursor:pointer;
+}
+header h1{
+  margin:0;
+  font-size:24px;
+}
 
-  #hamburger {
-    font-size: 30px;
-    cursor: pointer;
-    user-select: none;
-  }
+/* NOTIFICATION */
+#notify{
+  position:relative;
+  font-size:26px;
+  cursor:pointer;
+}
+#notify span{
+  position:absolute;
+  top:-6px;
+  right:-8px;
+  background:red;
+  color:#fff;
+  font-size:12px;
+  padding:2px 6px;
+  border-radius:50%;
+}
 
-  header h1 {
-    font-size: 36px;
-    margin: 0;
-    flex-grow: 1;
-    text-align: center;
-  }
+/* SEARCH */
+#search{
+  width:100%;
+  padding:12px;
+  font-size:16px;
+  margin-bottom:15px;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
 
-  /* Search bar */
-  #search-bar {
-    width: 100%;
-    max-width: 400px;
-    padding: 10px;
-    font-size: 18px;
-    border-radius: 5px;
-    border: none;
-    margin-bottom: 20px;
-  }
+/* SIDEBAR */
+#sidebar{
+  position:fixed;
+  top:0;
+  left:-260px;
+  width:240px;
+  height:100%;
+  background:#fff;
+  padding:20px;
+  box-shadow:2px 0 10px rgba(0,0,0,.2);
+  transition:.3s;
+  z-index:1000;
+}
+#sidebar a{
+  display:block;
+  margin:15px 0;
+  color:#000;
+  text-decoration:none;
+  font-size:18px;
+}
+#close{
+  margin-top:20px;
+  padding:10px;
+  width:100%;
+  font-size:16px;
+}
 
-  /* Sidebar */
-  #sidebar {
-    position: fixed;
-    top: 0;
-    left: -300px;
-    width: 250px;
-    height: 100%;
-    background-color: #111;
-    color: #fff;
-    padding: 20px;
-    transition: left 0.3s ease;
-    z-index: 1000;
-    overflow-y: auto;
-  }
+/* PRODUCTS */
+.products{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+}
+.product{
+  background:#fff;
+  border-radius:12px;
+  padding:10px;
+}
+.product img{
+  width:100%;
+  height:220px;
+  object-fit:cover;
+  border-radius:10px;
+}
+.product h3{
+  margin:10px 0 5px;
+}
+.product p{
+  font-weight:bold;
+}
 
-  #sidebar h3 { margin-top:0; }
-  #sidebar ul { list-style: none; padding:0; margin:0; font-size:18px; }
-  #sidebar ul li { margin: 15px 0; }
-  #sidebar a { color: #fff; text-decoration: none; }
-  #closeSidebar {
-    margin-top: 20px;
-    padding: 10px 15px;
-    font-size: 18px;
-    cursor: pointer;
-    border: none;
-    border-radius: 5px;
-    background: #e91e63;
-    color: #fff;
-  }
+/* CART */
+.cart-controls{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+}
+.cart-controls button{
+  padding:6px 14px;
+  font-size:18px;
+  border:none;
+  background:#000;
+  color:#fff;
+  border-radius:6px;
+}
+.cart-controls span{
+  font-size:18px;
+}
 
-  /* Products grid */
-  .container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center;
-  }
+/* SUMMARY */
+.summary{
+  margin-top:20px;
+  text-align:center;
+}
+.summary button{
+  margin-top:10px;
+  padding:12px 25px;
+  font-size:18px;
+  background:#000;
+  color:#fff;
+  border:none;
+  border-radius:8px;
+}
 
-  .product {
-    background-color: #111;
-    border: 2px solid #555;
-    border-radius: 10px;
-    width: calc(50% - 20px);
-    padding: 15px;
-    text-align: center;
-    box-sizing: border-box;
-  }
-
-  .product img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 5px;
-  }
-
-  .product h3 { font-size: 24px; margin: 15px 0 5px; }
-  .product p { font-size: 20px; margin: 5px 0; }
-
-  .cart-controls {
-    margin-top: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .cart-controls span {
-    font-size: 22px;
-    font-weight: bold;
-    min-width: 30px;
-    text-align: center;
-    display: inline-block;
-  }
-
-  .cart-controls button {
-    padding: 8px 15px;
-    font-size: 18px;
-    font-weight: bold;
-    border: none;
-    border-radius: 5px;
-    background-color: #e91e63;
-    color: #fff;
-    cursor: pointer;
-    transition: 0.2s;
-  }
-
-  .cart-controls button:hover { background-color: #d81b60; }
-
-  #cart-summary {
-    margin-top: 30px;
-    font-size: 24px;
-    text-align: center;
-  }
-
-  #cart-summary button {
-    font-size: 20px;
-    padding: 10px 20px;
-  }
-
-  a { text-decoration: none; }
+/* NOTIFICATION PANEL */
+#noteBox{
+  display:none;
+  position:fixed;
+  right:15px;
+  top:70px;
+  width:300px;
+  max-height:400px;
+  overflow:auto;
+  background:#fff;
+  box-shadow:0 5px 15px rgba(0,0,0,.3);
+  border-radius:10px;
+  padding:15px;
+  z-index:2000;
+}
+#noteBox h3{margin-top:0;}
+.note{
+  padding:10px;
+  border-bottom:1px solid #ddd;
+  font-size:14px;
+}
 </style>
 </head>
+
 <body>
 
+<%
+  const cartSafe = cart || [];
+  const notes = (typeof notifications !== "undefined") ? notifications : [];
+%>
+
 <header>
-  <div id="hamburger">☰</div>
-  <h1>Welcome to Lesy Luxury</h1>
+  <div class="header-left">
+    <div id="menuBtn">☰</div>
+    <h1>Lesy Luxury</h1>
+  </div>
+
+  <div id="notify">
+    🔔
+    <% if(notes.length){ %>
+      <span><%= notes.length %></span>
+    <% } %>
+  </div>
 </header>
 
-<!-- Search -->
-<input type="text" id="search-bar" placeholder="Search products..." onkeyup="filterProducts()">
+<input id="search" placeholder="Search products..." onkeyup="filter()">
 
-<!-- Sidebar -->
 <div id="sidebar">
-  <h3>Menu</h3>
-  <hr style="border:1px solid #555;">
-  <ul>
-    <li><a href="/privacy-policy">Privacy Policy</a></li>
-    <li><a href="/contact-support">Contact Support</a></li>
-  </ul>
-  <button id="closeSidebar">Close</button>
+  <a href="/dashboard">Dashboard</a>
+  <a href="/contact-support">Support</a>
+  <a href="/privacy">Privacy Policy</a>
+  <button id="close">Close</button>
 </div>
 
-<!-- Products -->
-<div class="container" id="product-container">
-  <% products.forEach(product => { %>
-    <div class="product" data-name="<%= product.name.toLowerCase() %>">
-      <img src="<%= product.img %>" alt="<%= product.name %>">
-      <h3><%= product.name %></h3>
-      <p>$<%= product.price.toFixed(2) %></p>
+<div id="noteBox">
+  <h3>Notifications</h3>
+  <% if(!notes.length){ %>
+    <p>No notifications</p>
+  <% } else { %>
+    <% notes.forEach(n=>{ %>
+      <div class="note"><%= n.message %></div>
+    <% }) %>
+  <% } %>
+</div>
 
-      <% const cartItem = cart.find(c => c.id === product.id); %>
-      <div class="cart-controls">
-        <% if(cartItem){ %>
-          <!-- Show plus/minus if in cart -->
-          <form method="POST" action="/cart/decrease" style="display:inline">
-            <input type="hidden" name="id" value="<%= product.id %>">
-            <button type="submit">-</button>
-          </form>
-          <span><%= cartItem.qty %></span>
-          <form method="POST" action="/cart/increase" style="display:inline">
-            <input type="hidden" name="id" value="<%= product.id %>">
-            <button type="submit">+</button>
-          </form>
-        <% } else { %>
-          <!-- Show Add button if not in cart -->
-          <form method="POST" action="/cart/add">
-            <input type="hidden" name="id" value="<%= product.id %>">
-            <button type="submit">Add to Cart</button>
-          </form>
-        <% } %>
-      </div>
+<div class="products" id="list">
+  <% products.forEach(p=>{ 
+    const item = cartSafe.find(c=>c.id===p.id);
+  %>
+  <div class="product" data-name="<%= p.name.toLowerCase() %>">
+    <img src="<%= p.image || p.img %>">
+    <h3><%= p.name %></h3>
+    <p>$<%= p.price.toFixed(2) %></p>
+
+    <div class="cart-controls">
+      <% if(item){ %>
+        <form method="POST" action="/cart/decrease">
+          <input type="hidden" name="id" value="<%= p.id %>">
+          <button>-</button>
+        </form>
+
+        <span><%= item.qty %></span>
+
+        <form method="POST" action="/cart/increase">
+          <input type="hidden" name="id" value="<%= p.id %>">
+          <button>+</button>
+        </form>
+      <% } else { %>
+        <form method="POST" action="/cart/add">
+          <input type="hidden" name="id" value="<%= p.id %>">
+          <button>Add to Cart</button>
+        </form>
+      <% } %>
     </div>
+  </div>
   <% }) %>
 </div>
 
-<!-- Cart Summary -->
-<div id="cart-summary">
-  <p>Items: <%= cart.reduce((sum,i)=>sum+i.qty,0) %> | Total: $<%= cart.reduce((sum,i)=>sum+i.price*i.qty,0).toFixed(2) %></p>
-  <% if(cart.length > 0){ %>
+<div class="summary">
+  <p>
+    Items: <%= cartSafe.reduce((s,i)=>s+i.qty,0) %> |
+    Total: $<%= cartSafe.reduce((s,i)=>s+i.qty*i.price,0).toFixed(2) %>
+  </p>
+
+  <% if(cartSafe.length){ %>
     <a href="/checkout"><button>Order</button></a>
   <% } %>
 </div>
 
 <script>
-const hamburger = document.getElementById("hamburger");
-const sidebar = document.getElementById("sidebar");
-const closeSidebar = document.getElementById("closeSidebar");
+menuBtn.onclick=()=>sidebar.style.left="0";
+close.onclick=()=>sidebar.style.left="-260px";
 
-// Sidebar toggle
-hamburger.addEventListener("click", () => sidebar.style.left = "0");
-closeSidebar.addEventListener("click", () => sidebar.style.left = "-300px");
+notify.onclick=()=>{
+  noteBox.style.display = noteBox.style.display==="block" ? "none" : "block";
+};
 
-// Close sidebar when clicking outside
-document.addEventListener("click", e => {
-  if (!sidebar.contains(e.target) && !hamburger.contains(e.target)) {
-    sidebar.style.left = "-300px";
-  }
-});
-
-// Search filter
-function filterProducts() {
-  const input = document.getElementById('search-bar').value.toLowerCase();
-  document.querySelectorAll('.product').forEach(p => {
-    p.style.display = p.dataset.name.includes(input) ? 'block' : 'none';
+function filter(){
+  const v=search.value.toLowerCase();
+  document.querySelectorAll(".product").forEach(p=>{
+    p.style.display=p.dataset.name.includes(v)?"block":"none";
   });
 }
 </script>

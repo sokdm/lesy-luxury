@@ -1,240 +1,371 @@
-// server.js
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const session = require("express-session");
 const multer = require("multer");
 const bcrypt = require("bcryptjs");
-const nodemailer = require("nodemailer");
+const crypto = require("crypto");
+require("dotenv").config();
 
 const app = express();
-const PORT = 8000;
+app.set("trust proxy", 1);
+const PORT = process.env.PORT || 8000;
 
-// Middleware
+/* =========================
+ENSURE FILES
+========================= */
+const ensureFile = (file, defaultData) => {
+  if (!fs.existsSync(file)) fs.writeFileSync(file, JSON.stringify(defaultData, null, 2));
+};
+
+ensureFile("users.json", []);
+ensureFile("products.json", []);
+ensureFile("orders.json", []);
+ensureFile("messages.json", []);
+ensureFile("notifications.json", []);
+ensureFile("countries.json", {
+  "Nigeria": ["Lagos", "Abuja", "Port Harcourt"],
+  "United States": ["New York", "Los Angeles", "Chicago"],
+  "United Kingdom": ["London", "Manchester", "Birmingham"],
+  "Canada": ["Toronto", "Vancouver", "Montreal"],
+  "Germany": ["Berlin", "Munich", "Hamburg"],
+  "France": ["Paris", "Lyon", "Marseille"],
+  "Spain": ["Madrid", "Barcelona", "Seville"],
+  "Italy": ["Rome", "Milan", "Naples"],
+  "China": ["Beijing", "Shanghai", "Shenzhen"],
+  "Japan": ["Tokyo", "Osaka", "Kyoto"]
+});
+
+/* =========================
+MIDDLEWARE
+========================= */
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
+
 app.set("views", path.join(__dirname, "views"));
 app.engine("ejs", require("ejs").renderFile);
 app.set("view engine", "ejs");
 
 app.use(session({
-  secret: "secret123",
+  secret: process.env.SESSION_SECRET || "dev_secret",
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: false,
+  cookie: { secure: process.env.NODE_ENV === "production", maxAge: 24*60*60*1000 }
 }));
 
-// Multer for admin product uploads
+/* =========================
+MULTER
+========================= */
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "public/images"),
-  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname)
+  destination: (_, __, cb) => cb(null, "public/images"),
+  filename: (_, file, cb) => cb(null, Date.now() + "-" + Math.random() + "-" + file.originalname)
 });
 const upload = multer({ storage });
 
-// JSON helpers (always return array)
-const readJSON = (file) => {
-  if (!fs.existsSync(file)) return [];
-  try {
-    const data = fs.readFileSync(file, "utf-8");
-    if (!data) return [];
-    const parsed = JSON.parse(data);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch(err) {
-    console.error("Error reading JSON:", err);
-    return [];
-  }
-};
+/* =========================
+HELPERS
+========================= */
+const readJSON = file => { try { return JSON.parse(fs.readFileSync(file, "utf-8")) || []; } catch { return []; } };
 const saveJSON = (file, data) => fs.writeFileSync(file, JSON.stringify(data, null, 2));
 
-// ===== ROUTES ===== //
+const isUser = (req, res, next) => req.session.user ? next() : res.redirect("/login");
+const isAdmin = (req, res, next) => req.session.admin ? next() : res.redirect("/admin");
 
-// Home
-app.get("/", (req, res) => res.render("index.ejs"));
+/* =========================
+ROUTES
+========================= */
 
-// Signup/Login
-app.get("/signup", (req,res)=>res.render("signup.ejs"));
-app.post("/signup", async (req,res)=>{
-  const {email, password} = req.body;
+/* HOME */
+app.get("/", (_, res) => res.render("index.ejs"));
+
+/* AUTH */
+app.get("/signup", (_, res) => res.render("signup.ejs"));
+app.post("/signup", async (req, res) => {
   const users = readJSON("users.json");
-  const hashed = await bcrypt.hash(password, 10);
-  users.push({email, password: hashed});
+  if (users.find(u => u.email === req.body.email)) return res.send("User exists");
+
+  users.push({
+    id: crypto.randomUUID(),
+    email: req.body.email,
+    password: await bcrypt.hash(req.body.password, 10),
+    createdAt: new Date(),
+    banned: false
+  });
   saveJSON("users.json", users);
   res.redirect("/login");
 });
 
-app.get("/login", (req,res)=>res.render("login.ejs"));
-app.post("/login", async (req,res)=>{
-  const {email,password} = req.body;
+app.get("/login", (_, res) => res.render("login.ejs"));
+app.post("/login", async (req, res) => {
   const users = readJSON("users.json");
-  const user = users.find(u=>u.email===email);
-  if(!user) return res.send("User not found!");
-  const match = await bcrypt.compare(password,user.password);
-  if(!match) return res.send("Incorrect password!");
-  req.session.user = email;
+  const user = users.find(u => u.email === req.body.email);
+  if (!user) return res.send("User not found");
+  if (user.banned) return res.send("You are banned");
+  if (!(await bcrypt.compare(req.body.password, user.password))) return res.send("Wrong password");
+
+  req.session.user = { id: user.id, email: user.email };
   res.redirect("/dashboard");
 });
 
-// Dashboard
-app.get("/dashboard", (req,res)=>{
-  if(!req.session.user) return res.redirect("/");
-  let products = readJSON("products.json").map(p => ({...p, price:Number(p.price)}));
-  const cart = (req.session.cart || []).map(i => ({...i, price:Number(i.price), qty:Number(i.qty), id:Number(i.id)}));
-  res.render("dashboard.ejs", {user:req.session.user, products, cart});
+/* DASHBOARD */
+app.get("/dashboard", isUser, (req, res) => {
+  const orders = readJSON("orders.json").filter(o => o && o.userId === req.session.user.id);
+  const notifications = readJSON("notifications.json").filter(n => n && n.email === req.session.user.email);
+  res.render("dashboard.ejs", {
+    products: readJSON("products.json"),
+    cart: req.session.cart || [],
+    orders,
+    notifications
+  });
 });
 
-// Add/Increase/Decrease/Remove cart items
-app.post("/cart/add", (req,res)=>{
-  if(!req.session.user) return res.redirect("/");
-  const {id} = req.body;
+/* CART */
+app.post("/cart/add", isUser, (req, res) => {
   const products = readJSON("products.json");
-  const product = products.find(p => Number(p.id) === Number(id));
-  if(!product) return res.send("Product not found");
-  if(!req.session.cart) req.session.cart = [];
-  let item = req.session.cart.find(c=>Number(c.id)===Number(id));
-  if(item) item.qty++;
-  else req.session.cart.push({...product, qty:1});
+  const p = products.find(x => x.id == req.body.id);
+  if (!p) return res.send("Product not found");
+
+  req.session.cart = req.session.cart || [];
+  const i = req.session.cart.find(x => x.id === p.id);
+  if (i) i.qty++; else req.session.cart.push({...p, qty:1});
   res.redirect("/dashboard");
 });
-
-app.post("/cart/increase", (req,res)=>{
-  if(!req.session.cart) req.session.cart = [];
-  const {id} = req.body;
-  let item = req.session.cart.find(c=>Number(c.id)===Number(id));
-  if(item) item.qty++;
+app.post("/cart/increase", isUser, (req, res) => {
+  const item = req.session.cart?.find(x => x.id == req.body.id);
+  if (item) item.qty++;
   res.redirect("/dashboard");
 });
-
-app.post("/cart/decrease", (req,res)=>{
-  if(!req.session.cart) req.session.cart = [];
-  const {id} = req.body;
-  let item = req.session.cart.find(c=>Number(c.id)===Number(id));
-  if(item){
+app.post("/cart/decrease", isUser, (req, res) => {
+  let cart = req.session.cart || [];
+  const item = cart.find(x => x.id == req.body.id);
+  if (item) {
     item.qty--;
-    if(item.qty<=0){
-      req.session.cart = req.session.cart.filter(c=>Number(c.id)!==Number(id));
-    }
+    if (item.qty <=0) cart = cart.filter(x=>x.id!=req.body.id);
   }
+  req.session.cart = cart;
   res.redirect("/dashboard");
 });
 
-// Checkout
-app.get("/checkout", (req,res)=>{
-  if(!req.session.user) return res.redirect("/");
-  const cart = (req.session.cart||[]).map(i=>({...i, price:Number(i.price), qty:Number(i.qty)}));
-  res.render("checkout.ejs",{cart});
+/* =========================
+CHECKOUT WITH PALMPAY
+========================= */
+app.get("/checkout", isUser, (req,res)=>{
+  res.render("checkout.ejs",{ cart:req.session.cart||[], countries:readJSON("countries.json") });
 });
 
-app.post("/checkout", async (req,res)=>{
-  const {fullName, phone, email, address, paymentMethod} = req.body;
+app.post("/checkout", isUser, (req,res)=>{
   const cart = req.session.cart || [];
-  if(cart.length===0) return res.redirect("/dashboard");
+  if (!cart.length) return res.redirect("/dashboard");
 
+  const total = cart.reduce((a,b)=>a+b.price*b.qty,0);
   const orders = readJSON("orders.json");
-  const order = {fullName, phone, email, address, paymentMethod, cart, date:new Date()};
-  orders.push(order);
+
+  const newOrder = {
+    id: crypto.randomUUID(),
+    userId: req.session.user.id,
+    fullName: req.body.fullName,
+    email: req.body.email,
+    phone: req.body.phone,
+    address: req.body.address,
+    country: req.body.country,
+    city: req.body.city,
+    items: cart,
+    total,
+    paymentMethod: "PalmPay",
+    status: "pending",
+    createdAt: new Date()
+  };
+
+  orders.push(newOrder);
   saveJSON("orders.json", orders);
 
-  // Send confirmation email
-  try{
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth:{user:'lesyluxury@gmail.com', pass:'Wisdomfx22a'}
-    });
-    const mailOptions = {
-      from: '"Lesy Luxury" <lesyluxury@gmail.com>',
-      to: email,
-      subject: 'Order Confirmation - Lesy Luxury',
-      html: `
-        <h2>Thank you for your order, ${fullName}!</h2>
-        <p>Payment Method: ${paymentMethod}</p>
-        <h3>Order Summary:</h3>
-        <ul>${cart.map(i=>`<li>${i.name} - $${i.price.toFixed(2)} x ${i.qty}</li>`).join('')}</ul>
-        <p><strong>Total:</strong> $${cart.reduce((sum,i)=>sum+i.price*i.qty,0).toFixed(2)}</p>
-        <p>Shipping to: ${address}</p>
-        <p>Phone: ${phone}</p>
-      `
-    };
-    await transporter.sendMail(mailOptions);
-    console.log('Email sent to', email);
-  }catch(err){console.error('Email error:', err);}
+  req.session.currentOrderId = newOrder.id;
 
-  req.session.cart=[];
-  res.render("success.ejs",{fullName,email,total:cart.reduce((sum,i)=>sum+i.price*i.qty,0)});
-});
-
-// Admin
-app.get("/admin", (req,res)=>res.render("admin/login.ejs"));
-app.post("/admin/login",(req,res)=>{
-  const {password} = req.body;
-  if(password!=="admin123") return res.send("Access Denied");
-  req.session.admin = true;
-  res.redirect("/admin/panel");
-});
-
-app.get("/admin/panel",(req,res)=>{
-  if(!req.session.admin) return res.send("Access Denied");
-  const messages = readJSON("messages.json");
-  res.render("admin/panel.ejs",{messages});
-});
-
-app.post("/admin/add-products", upload.array("images"), (req,res)=>{
-  if(!req.session.admin) return res.send("Access Denied");
-  const products = readJSON("products.json");
-  let {name, price, category} = req.body;
-  price = parseFloat(price);
-  req.files.forEach(f=>{
-    products.push({id:Date.now()+Math.random(), name, price, category, img:"/images/"+f.filename});
+  res.render("palmpay.ejs", {
+    fullName: newOrder.fullName,
+    total: newOrder.total,
+    orderId: newOrder.id
   });
+});
+
+// AFTER USER TAP CONTINUE → SHOW PENDING
+app.post("/checkout/palmpay/continue", isUser, (req,res)=>{
+  const orders = readJSON("orders.json");
+  const order = orders.find(o => o && o.id === req.session.currentOrderId);
+  if(!order) return res.send("Order not found");
+
+  req.session.cart = [];
+  delete req.session.currentOrderId;
+
+  res.render("pending.ejs", {
+    fullName: order.fullName,
+    email: order.email,
+    total: order.total,
+    status: order.status,
+    orderId: order.id
+  });
+});
+
+/* CONTACT SUPPORT */
+app.get("/contact-support", isUser, (req,res)=>{
+  const messages = readJSON("messages.json").filter(m=>m && m.email===req.session.user.email);
+  const notifications = readJSON("notifications.json").filter(n=>n && n.email===req.session.user.email);
+  res.render("support.ejs",{ messages, notifications, user:req.session.user });
+});
+app.post("/contact-support/send", isUser, (req,res)=>{
+  const messages = readJSON("messages.json");
+  messages.push({id:crypto.randomUUID(), email:req.session.user.email, sender:"user", message:req.body.message, createdAt:new Date()});
+  saveJSON("messages.json", messages);
+  res.redirect("/contact-support");
+});
+
+/* STATIC PAGES */
+app.get("/contact", (_,res)=>res.render("contact.ejs"));
+app.post("/contact", (req,res)=>{
+  const messages = readJSON("messages.json");
+  messages.push({ id:crypto.randomUUID(), name:req.body.name, email:req.body.email, message:req.body.message, createdAt:new Date() });
+  saveJSON("messages.json", messages);
+  res.send("Message sent! We'll get back to you soon.");
+});
+app.get("/privacy", (_,res)=>res.render("privacy.ejs"));
+
+/* ADMIN PANEL */
+app.get("/admin", (_,res)=>res.render("admin/login.ejs"));
+app.post("/admin/login",(req,res)=>{
+  if(req.body.password===process.env.ADMIN_PASSWORD){
+    req.session.admin=true;
+    res.redirect("/admin/panel");
+  } else res.send("Access Denied");
+});
+app.get("/admin/panel", isAdmin, (req,res)=>{
+  res.render("admin/panel.ejs",{
+    users: readJSON("users.json"),
+    products: readJSON("products.json"),
+    orders: readJSON("orders.json"),
+    messages: readJSON("messages.json"),
+    notifications: readJSON("notifications.json")
+  });
+});
+
+/* ADMIN PRODUCT */
+app.post("/admin/product/upload", isAdmin, upload.single("image"), (req,res)=>{
+  const products = readJSON("products.json");
+  const {name, price} = req.body;
+  if(!name || !price || !req.file) return res.send("All fields required");
+  products.push({id:crypto.randomUUID(), name, price:parseFloat(price), image:"/images/"+req.file.filename, createdAt:new Date()});
   saveJSON("products.json", products);
   res.redirect("/admin/panel");
 });
-
-app.post("/admin/reply",(req,res)=>{
-  if(!req.session.admin) return res.send("Access Denied");
-  const {user, reply} = req.body;
-  const messages = readJSON("messages.json");
-  const msgIndex = messages.findIndex(m=>m.user===user && !m.reply);
-  if(msgIndex>=0) messages[msgIndex].reply = reply;
-  saveJSON("messages.json", messages);
+app.post("/admin/product/edit", isAdmin, (req,res)=>{
+  const products = readJSON("products.json");
+  const p = products.find(x=>x.id==req.body.id);
+  if(p){
+    p.name = req.body.name || p.name;
+    p.price = req.body.price ? parseFloat(req.body.price) : p.price;
+    saveJSON("products.json", products);
+  }
   res.redirect("/admin/panel");
 });
-app.get("/admin/support", (req, res) => {
-  res.render("admin-support", {
-    messages: supportMessages
+
+/* ADMIN ORDER APPROVE */
+app.post("/admin/order/approve", isAdmin, (req,res)=>{
+  const orders = readJSON("orders.json");
+  const notifications = readJSON("notifications.json");
+  const order = orders.find(o=>o && o.id==req.body.id);
+  if(!order) return res.send("Order not found");
+
+  order.status = "approved";
+  saveJSON("orders.json", orders);
+
+  notifications.push({
+    id: crypto.randomUUID(),
+    email: order.email,
+    message: `Your order #${order.id} has been approved and is now successful.`,
+    createdAt: new Date()
   });
+  saveJSON("notifications.json", notifications);
+
+  res.redirect("/admin/panel");
 });
-// Customer messages
-app.post("/message",(req,res)=>{
-  if(!req.session.user) return res.redirect("/");
-  const {message} = req.body;
+
+/* =========================
+ADMIN DASHBOARD BUTTON ROUTES
+========================= */
+
+// Users Dashboard
+app.get("/admin/users", isAdmin, (req, res) => {
+  const users = readJSON("users.json");
+  res.render("admin/users.ejs", { users });
+});
+
+// Products Dashboard
+app.get("/admin/products", isAdmin, (req, res) => {
+  const products = readJSON("products.json");
+  res.render("admin/products.ejs", { products });
+});
+
+// Orders Dashboard
+app.get("/admin/orders", isAdmin, (req, res) => {
+  const orders = readJSON("orders.json");
+  res.render("admin/orders.ejs", { orders });
+});
+
+// Messages Dashboard
+app.get("/admin/messages", isAdmin, (req, res) => {
   const messages = readJSON("messages.json");
-  messages.push({user:req.session.user, message});
-  saveJSON("messages.json", messages);
-  res.redirect("/dashboard");
+  res.render("admin/messages.ejs", { messages });
+});
+
+// Notifications Dashboard
+app.get("/admin/notifications", isAdmin, (req, res) => {
+  const notifications = readJSON("notifications.json");
+  res.render("admin/notifications.ejs", { notifications });
 });
 
 // Logout
-app.get("/logout",(req,res)=>{req.session.destroy();res.redirect("/");});
-
-// Start server
-// Privacy Policy
-app.get('/privacy-policy', (req, res) => {
-  res.render('privacy-policy');
+app.get("/admin/logout", isAdmin, (req, res) => {
+  req.session.admin = false;
+  res.redirect("/admin");
 });
 
-// Contact Support
-app.get('/contact-support', (req, res) => {
-  res.render('contact-support');
+// GET edit product form
+app.get("/admin/product/edit/:id", isAdmin, (req, res) => {
+  const products = readJSON("products.json");
+  const product = products.find(p => p.id === req.params.id);
+  if (!product) return res.send("Product not found");
+  res.render("admin/edit-product.ejs", { product });
 });
 
-// Handle Contact Form Submission
-app.post('/contact-support', (req, res) => {
-  const { name, email, message } = req.body;
+// POST edit product
+app.post("/admin/product/edit/:id", isAdmin, (req, res) => {
+  const products = readJSON("products.json");
+  const product = products.find(p => p.id === req.params.id);
+  if (!product) return res.send("Product not found");
 
-  // Here you can store the message in database or send email to admin
-  console.log('New support message:', { name, email, message });
+  product.name = req.body.name;
+  product.price = parseFloat(req.body.price);
+  saveJSON("products.json", products);
 
-  // Optionally redirect to a "thank you" page or back to dashboard
-  res.send('<h1>Message sent!</h1><a href="/dashboard">Back to Dashboard</a>');
+  res.redirect("/admin/products");
 });
-app.listen(PORT,()=>console.log(`Server running at http://localhost:${PORT}`));
+
+// POST delete product
+app.post("/admin/product/delete/:id", isAdmin, (req, res) => {
+  let products = readJSON("products.json");
+  const exists = products.find(p => p.id === req.params.id);
+  if (!exists) return res.send("Product not found");
+
+  products = products.filter(p => p.id !== req.params.id);
+  saveJSON("products.json", products);
+
+  res.redirect("/admin/products");
+});
+
+// GET Add Product Form
+app.get("/admin/product/upload", isAdmin, (req, res) => {
+  res.render("admin/add-product.ejs");
+});
+
+/* START SERVER */
+app.listen(PORT, ()=>console.log(`Server running on port ${PORT}`));

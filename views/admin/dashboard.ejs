@@ -13,18 +13,19 @@ button {
   background:#000; color:#fff; border:none; border-radius:10px; cursor:pointer; 
 }
 button:hover { opacity:0.9; }
-button.logout { background:red; }
 </style>
 </head>
 <body>
 <div class="container">
 <h1>Admin Dashboard</h1>
+
 <form action="/admin/users"><button type="submit">Users</button></form>
 <form action="/admin/products"><button type="submit">Products</button></form>
 <form action="/admin/orders"><button type="submit">Orders</button></form>
 <form action="/admin/messages"><button type="submit">Messages</button></form>
 <form action="/admin/notifications"><button type="submit">Notifications</button></form>
-<form action="/admin/logout"><button type="submit" class="logout">Logout</button></form>
+<form action="/admin/logout"><button type="submit" style="background:red;">Logout</button></form>
+
 </div>
 </body>
 </html>

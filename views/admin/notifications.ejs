@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin - Messages</title>
+<title>Admin - Notifications</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body { font-family: Arial, sans-serif; background:#f2f2f2; margin:0; padding:20px; }
@@ -17,18 +17,17 @@ a.back { display:inline-block; margin-bottom:20px; text-decoration:none; color:#
 <body>
 <div class="container">
 <a href="/admin/panel" class="back">← Back to Dashboard</a>
-<h1>Messages</h1>
+<h1>Notifications</h1>
 <table>
 <tr>
-<th>Email</th><th>Sender</th><th>Message</th><th>Created At</th>
+<th>Email</th><th>Message</th><th>Created At</th>
 </tr>
-<% messages.forEach(m => { %>
-  <% if(m && m.id) { %>
+<% notifications.forEach(n => { %>
+  <% if(n && n.id) { %>
     <tr>
-      <td><%= m.email %></td>
-      <td><%= m.sender || "N/A" %></td>
-      <td><%= m.message %></td>
-      <td><%= new Date(m.createdAt).toLocaleString() %></td>
+      <td><%= n.email %></td>
+      <td><%= n.message %></td>
+      <td><%= new Date(n.createdAt).toLocaleString() %></td>
     </tr>
   <% } %>
 <% }) %>

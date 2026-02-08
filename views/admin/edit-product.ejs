@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Edit Product</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body { font-family: Arial, sans-serif; margin:0; background:#f2f2f2; }
+.container { max-width:500px; margin:50px auto; background:#fff; padding:30px; border-radius:15px; }
+h1 { text-align:center; margin-bottom:30px; }
+form { display:flex; flex-direction:column; }
+label { margin-bottom:5px; font-weight:bold; }
+input { padding:10px; margin-bottom:20px; border-radius:8px; border:1px solid #ccc; font-size:16px; }
+button { padding:14px; font-size:18px; background:#000; color:#fff; border:none; border-radius:10px; cursor:pointer; }
+button:hover { opacity:0.9; }
+a { text-align:center; display:block; margin-top:20px; text-decoration:none; color:#000; }
+img { width:100px; height:auto; margin-bottom:15px; border-radius:8px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Edit Product</h1>
+
+  <img src="<%= product.image %>" alt="<%= product.name %>">
+
+  <form action="/admin/product/edit/<%= product.id %>" method="POST">
+    <label for="name">Product Name</label>
+    <input type="text" name="name" id="name" value="<%= product.name %>" required>
+
+    <label for="price">Price ($)</label>
+    <input type="number" step="0.01" name="price" id="price" value="<%= product.price %>" required>
+
+    <button type="submit">Save Changes</button>
+  </form>
+
+  <a href="/admin/products">← Back to Products Dashboard</a>
+</div>
+
+</body>
+</html>

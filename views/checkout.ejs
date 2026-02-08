@@ -1,141 +1,74 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lesy Luxury Checkout</title>
+  <title>Checkout</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <style>
-    body { 
-      font-family: Arial, sans-serif; 
-      padding: 20px; 
-      background-color: #000; 
-      color: #fff; 
+    body{
+      background:#f0f0f0;
+      font-family:Arial, sans-serif;
+      padding:20px;
     }
-    h1 { font-size: 36px; text-align: center; margin-bottom: 20px; }
-    .container { 
-      display: flex; 
-      flex-direction: column; 
-      gap: 20px; 
-      max-width: 800px; 
-      margin: 0 auto; 
+    h2{ text-align:center; }
+    form{
+      background:#fff;
+      padding:20px;
+      border-radius:10px;
+      max-width:500px;
+      margin:auto;
     }
-    .cart-item { 
-      display: flex; 
-      justify-content: space-between; 
-      border-bottom: 1px solid #555; 
-      padding: 10px 0;
-      font-size: 20px;
+    label{ display:block; margin-top:15px; }
+    input, select{
+      width:100%;
+      padding:10px;
+      margin-top:5px;
+      font-size:16px;
     }
-    .total { 
-      font-size: 24px; 
-      text-align: right; 
-      margin-top: 10px;
-      font-weight: bold;
+    button{
+      margin-top:20px;
+      width:100%;
+      padding:12px;
+      font-size:18px;
+      background:#000;
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
     }
-    label { display: block; margin-top: 15px; font-size: 20px; }
-    input, select { 
-      width: 100%; 
-      padding: 10px; 
-      font-size: 18px; 
-      border-radius: 10px; 
-      border: none; 
-      margin-top: 5px;
-      box-sizing: border-box;
-    }
-    button { 
-      padding: 12px 20px; 
-      font-size: 20px; 
-      font-weight: bold;
-      border-radius: 10px;
-      border: none;
-      background-color: #e91e63;
-      color: #fff;
-      cursor: pointer;
-      margin-top: 20px;
-      transition: 0.2s;
-    }
-    button:hover { background-color: #d81b60; }
-    .payment-methods { display: flex; gap: 20px; margin-top: 10px; }
-    .payment-methods label { font-size: 20px; cursor: pointer; }
   </style>
 </head>
+
 <body>
 
-<h1>Checkout - Lesy Luxury</h1>
+<h2>Checkout</h2>
 
-<div class="container">
+<form method="POST" action="/checkout">
+  <label>Full Name</label>
+  <input name="fullName" required>
 
-  <h2>Order Summary</h2>
-  <% cart.forEach(item => { %>
-    <div class="cart-item">
-      <span><%= item.name %> x <%= item.qty %></span>
-      <span>$<%= (item.price * item.qty).toFixed(2) %></span>
-    </div>
-  <% }) %>
+  <label>Email</label>
+  <input type="email" name="email" required>
 
-  <div class="total">
-    Total: $<%= cart.reduce((sum,i)=>sum+i.price*i.qty,0).toFixed(2) %>
-  </div>
+  <label>Phone</label>
+  <input name="phone" required>
 
-  <form method="POST" action="/checkout">
-    <label>Full Name</label>
-    <input type="text" name="fullName" required>
+  <label>Address</label>
+  <input name="address" required>
 
-    <label>Email</label>
-    <input type="email" name="email" required>
+  <label>Country</label>
+  <select name="country" required>
+    <% Object.keys(countries).forEach(c=>{ %>
+      <option value="<%= c %>"><%= c %></option>
+    <% }) %>
+  </select>
 
-    <label>Phone</label>
-    <input type="text" name="phone" required>
+  <label>City</label>
+  <input name="city" required>
 
-    <label>Shipping Address</label>
-    <input type="text" name="address" required>
-
-    <label>Payment Method</label>
-    <div class="payment-methods">
-      <label><input type="radio" name="paymentMethod" value="Card" required> Card</label>
-      <label><input type="radio" name="paymentMethod" value="PayPal" required> PayPal</label>
-    </div>
-
-    <!-- Optional: show card fields if Card is selected -->
-    <div id="card-fields" style="display:none;">
-      <label>Card Number</label>
-      <input type="text" name="cardNumber" placeholder="1234 5678 9012 3456">
-
-      <label>Expiry</label>
-      <input type="text" name="expiry" placeholder="MM/YY">
-
-      <label>CVV</label>
-      <input type="text" name="cvv" placeholder="123">
-    </div>
-
-    <!-- Optional: show PayPal info if PayPal is selected -->
-    <div id="paypal-info" style="display:none; margin-top:10px; font-size:18px; color:#fff;">
-      Send payment to: <strong>wsdmpresh@gmail.com</strong><br>
-      Account Name: <strong>Daniel Wisdom</strong><br>
-      Confirm payment to proceed.
-    </div>
-
-    <button type="submit">Place Order</button>
-  </form>
-</div>
-
-<script>
-  const cardFields = document.getElementById('card-fields');
-  const paypalInfo = document.getElementById('paypal-info');
-  const radios = document.querySelectorAll('input[name="paymentMethod"]');
-
-  radios.forEach(radio => {
-    radio.addEventListener('change', () => {
-      if(radio.value === 'Card' && radio.checked){
-        cardFields.style.display = 'block';
-        paypalInfo.style.display = 'none';
-      } else if(radio.value === 'PayPal' && radio.checked){
-        cardFields.style.display = 'none';
-        paypalInfo.style.display = 'block';
-      }
-    });
-  });
-</script>
+  <button type="submit">Continue with PalmPay</button>
+</form>
 
 </body>
 </html>

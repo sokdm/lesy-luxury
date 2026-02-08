@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin - Messages</title>
+<title>Admin - Orders</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body { font-family: Arial, sans-serif; background:#f2f2f2; margin:0; padding:20px; }
@@ -11,24 +11,34 @@ h1 { text-align:center; margin-bottom:30px; }
 table { width:100%; border-collapse: collapse; }
 th, td { padding:12px; border:1px solid #ddd; text-align:left; }
 th { background:#000; color:#fff; }
+button { padding:6px 12px; border:none; border-radius:6px; cursor:pointer; }
+button.approve { background:green; color:#fff; }
 a.back { display:inline-block; margin-bottom:20px; text-decoration:none; color:#000; }
 </style>
 </head>
 <body>
 <div class="container">
 <a href="/admin/panel" class="back">← Back to Dashboard</a>
-<h1>Messages</h1>
+<h1>Orders</h1>
 <table>
 <tr>
-<th>Email</th><th>Sender</th><th>Message</th><th>Created At</th>
+<th>ID</th><th>User</th><th>Total</th><th>Status</th><th>Actions</th>
 </tr>
-<% messages.forEach(m => { %>
-  <% if(m && m.id) { %>
+<% orders.forEach(o => { %>
+  <% if(o && o.id) { %>
     <tr>
-      <td><%= m.email %></td>
-      <td><%= m.sender || "N/A" %></td>
-      <td><%= m.message %></td>
-      <td><%= new Date(m.createdAt).toLocaleString() %></td>
+      <td><%= o.id %></td>
+      <td><%= o.fullName %></td>
+      <td>$<%= o.total %></td>
+      <td><%= o.status %></td>
+      <td>
+        <% if(o.status === "pending") { %>
+          <form method="POST" action="/admin/order/approve" style="display:inline">
+            <input type="hidden" name="id" value="<%= o.id %>">
+            <button class="approve">Approve</button>
+          </form>
+        <% } %>
+      </td>
     </tr>
   <% } %>
 <% }) %>

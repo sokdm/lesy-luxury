@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Products Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body { font-family: Arial, sans-serif; background:#f2f2f2; margin:0; padding:20px; }
+.container { max-width:800px; margin:auto; background:#fff; padding:30px; border-radius:15px; }
+h1 { text-align:center; margin-bottom:30px; }
+table { width:100%; border-collapse:collapse; margin-bottom:30px; }
+th, td { border:1px solid #ddd; padding:12px; text-align:center; }
+th { background:#000; color:#fff; }
+button { padding:10px 15px; margin:2px; border:none; border-radius:8px; cursor:pointer; }
+.edit { background:#007BFF; color:#fff; }
+.delete { background:red; color:#fff; }
+a { text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Products Dashboard</h1>
+<table>
+  <tr>
+    <th>ID</th>
+    <th>Name</th>
+    <th>Price</th>
+    <th>Image</th>
+    <th>Actions</th>
+  </tr>
+  <% products.forEach(p => { %>
+    <tr>
+      <td><%= p.id %></td>
+      <td><%= p.name %></td>
+      <td>$<%= p.price.toFixed(2) %></td>
+      <td><img src="<%= p.image %>" width="50"></td>
+      <td>
+        <form action="/admin/product/edit/<%= p.id %>" method="GET" style="display:inline">
+          <button class="edit">Edit</button>
+        </form>
+        <form action="/admin/product/delete/<%= p.id %>" method="POST" style="display:inline">
+          <button class="delete">Delete</button>
+        </form>
+      </td>
+    </tr>
+  <% }) %>
+</table>
+<a href="/admin/panel"><button style="width:100%; padding:15px; background:#000; color:#fff;">Back to Admin Dashboard</button></a>
+</div>
+</body>
+</html>

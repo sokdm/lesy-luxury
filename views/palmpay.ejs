@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PalmPay Payment</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  margin:0;
+  padding:20px;
+  font-family:Arial, sans-serif;
+  background:#f2f2f2;
+}
+
+.container{
+  max-width:500px;
+  margin:auto;
+  background:#fff;
+  padding:25px;
+  border-radius:14px;
+}
+
+h1{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.info{
+  font-size:16px;
+  margin-bottom:20px;
+}
+
+.box{
+  background:#fafafa;
+  border:1px solid #ddd;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:20px;
+}
+
+.box p{
+  margin:10px 0;
+  font-size:16px;
+}
+
+strong{
+  font-size:17px;
+}
+
+.notice{
+  background:#fff8e1;
+  border:1px solid #ffe082;
+  padding:14px;
+  border-radius:10px;
+  font-size:15px;
+  margin-bottom:20px;
+}
+
+button{
+  width:100%;
+  padding:14px;
+  font-size:18px;
+  background:#000;
+  color:#fff;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+}
+button:hover{
+  opacity:.9;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h1>PalmPay Payment</h1>
+
+  <div class="info">
+    Hello <strong><%= fullName %></strong>, your total is  
+    <strong>$<%= total.toFixed(2) %></strong>
+  </div>
+
+  <div class="box">
+    <p><strong>Bank:</strong> PalmPay</p>
+    <p><strong>Account Number:</strong> 8108332873</p>
+    <p><strong>Account Name:</strong> Mercy Chiyem Daniel</p>
+  </div>
+
+  <div class="notice">
+    After making payment, tap <strong>Continue</strong> below.<br>
+    Your order will be marked as <strong>Pending</strong> and will remain so
+    until the admin approves it.
+  </div>
+
+  <!-- SAFE CONTINUE FORM -->
+  <form method="POST" action="/checkout/palmpay/continue">
+    <button type="submit">Continue</button>
+  </form>
+
+</div>
+
+</body>
+</html>

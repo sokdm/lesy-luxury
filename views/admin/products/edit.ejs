@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Product</title>
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      padding: 40px;
+    }
+    h1 { font-size: 3em; margin-bottom: 30px; text-align:center; }
+    form { 
+      max-width: 600px; 
+      margin: auto; 
+      background: #222; 
+      padding: 30px; 
+      border-radius: 15px; 
+    }
+    input[type="text"], input[type="number"], input[type="file"] {
+      width: 100%;
+      padding: 15px;
+      margin-bottom: 20px;
+      font-size: 1.8em;
+      border-radius: 8px;
+      border: none;
+    }
+    img {
+      display: block;
+      max-width: 100%;
+      height: 250px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+    button {
+      font-size: 1.8em;
+      padding: 15px 30px;
+      background: #06a;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+    }
+    a.back-btn {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      font-size: 1.6em;
+      color: #aaa;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Edit Product</h1>
+
+  <% if (product) { %>
+    <form action="/admin/product/edit/<%= product.id %>" method="POST" enctype="multipart/form-data">
+      
+      <% if(product.image){ %>
+        <img src="<%= product.image %>" alt="Current Product Image">
+      <% } %>
+
+      <input type="text" name="name" value="<%= product.name %>" placeholder="Product Title" required>
+      <input type="number" name="price" value="<%= product.price %>" placeholder="Price" step="0.01" required>
+      <input type="file" name="image">
+      <button type="submit">Save Changes</button>
+    </form>
+
+    <a href="/admin/panel?tab=products" class="back-btn">Back to Products Dashboard</a>
+  <% } else { %>
+    <p style="text-align:center; font-size:2em;">Product not found.</p>
+  <% } %>
+
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Order Pending</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{font-family:Arial,sans-serif;background:#f2f2f2;padding:20px}
+.container{max-width:500px;margin:auto;background:#fff;padding:25px;border-radius:14px;text-align:center}
+button{padding:14px 0;font-size:18px;background:#000;color:#fff;border:none;border-radius:10px;cursor:pointer;margin-top:20px}
+button:hover{opacity:.9}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Order Pending</h1>
+  <p>Hi <strong><%= fullName %></strong>, your payment has been received and your order is <strong><%= status %></strong>.</p>
+  <p>It will be <strong>approved by admin</strong> before it is marked successful.</p>
+  <form action="/dashboard">
+    <button type="submit">Go to Dashboard</button>
+  </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "Nigeria": ["Lagos", "Abuja", "Port Harcourt", "Kano", "Ibadan"],
+  "United States": ["New York", "Los Angeles", "Chicago", "Houston", "Miami"],
+  "United Kingdom": ["London", "Manchester", "Birmingham", "Liverpool", "Leeds"],
+  "Canada": ["Toronto", "Vancouver", "Montreal", "Calgary", "Ottawa"],
+  "Germany": ["Berlin", "Munich", "Frankfurt", "Hamburg", "Cologne"],
+  "France": ["Paris", "Lyon", "Marseille", "Nice", "Bordeaux"],
+  "Spain": ["Madrid", "Barcelona", "Valencia", "Seville", "Bilbao"],
+  "Italy": ["Rome", "Milan", "Naples", "Florence", "Venice"],
+  "China": ["Beijing", "Shanghai", "Guangzhou", "Shenzhen", "Chengdu"],
+  "Japan": ["Tokyo", "Osaka", "Kyoto", "Nagoya", "Hiroshima"]
+}
